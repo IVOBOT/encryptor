@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
+from key_generator import *
+
 
 def function(input_file, output_file, password):
     hash = ""
@@ -8,8 +10,8 @@ def function(input_file, output_file, password):
     symmetric_key = ""
     return hash, asymmetric_key, symmetric_key
 
-class Frontend:
 
+class Frontend:
     input_file = None
     output_file = None
     password = None
@@ -31,38 +33,46 @@ class Frontend:
     def __init__(self, encryption_function, decryption_function):
         self.encrypt = encryption_function
         self.decrypt = decryption_function
-        #self.input_file = self.choose_input_file()
+        # self.input_file = self.choose_input_file()
         self.init_window()
         self.draw_window_body()
         self.root.mainloop()
 
     def choose_input_file(self):
-        self.input_file = filedialog.askopenfile(title="Choose input file")
+        self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb")
 
         for widget in self.left_sidebar.winfo_children():
             widget.destroy()
         self.left_sideba = self.draw_sidebar(side="left")
 
     def choose_output_file(self):
-        self.output_file = filedialog.asksaveasfile(title="Choose output file")
+        self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb")
 
         for widget in self.right_sidebar.winfo_children():
             widget.destroy()
         self.right_sidebar = self.draw_sidebar(side="right")
-    
-    def update_center_frame(self):
+
+    def update_view(self):
+        self.output_file = None
+        self.input_file = None
         for widget in self.frame_center.winfo_children():
             widget.destroy()
         self.draw_center_frame()
+        for widget in self.left_sidebar.winfo_children():
+            widget.destroy()
+        self.left_sidebar = self.draw_sidebar(side="left")
+        for widget in self.right_sidebar.winfo_children():
+            widget.destroy()
+        self.right_sidebar = self.draw_sidebar(side="right")
         self.root.update_idletasks()
 
     def set_mode_encrypt(self):
         self.mode = "encrypt"
-        self.update_center_frame()
+        self.update_view()
 
     def set_mode_decrypt(self):
         self.mode = "decrypt"
-        self.update_center_frame()
+        self.update_view()
 
     def init_window(self):
         self.root = tk.Tk()
@@ -86,7 +96,7 @@ class Frontend:
         menubar.add_cascade(label="Edit", menu=edit_menu)
         edit_menu.add_command(label="Encrypt", command=self.set_mode_encrypt)
         edit_menu.add_command(label="Decrypt", command=self.set_mode_decrypt)
-    
+
     def draw_sidebar(self, side):
 
         if side == "left":
@@ -95,19 +105,19 @@ class Frontend:
             column = 0
             grid_column = 1
             title = "INPUT FILE"
-            choose_function = self.choose_input_file    
-            loaded_file = self.input_file        
+            choose_function = self.choose_input_file
+            loaded_file = self.input_file
         elif side == "right":
             border_sticky = "ns"
             sticky = "nsew"
             column = 4
             grid_column = 3
             title = "OUTPUT FILE"
-            choose_function = self.choose_output_file     
-            loaded_file = self.output_file               
+            choose_function = self.choose_output_file
+            loaded_file = self.output_file
         else:
             return
-        
+
         if loaded_file == None:
             descryption = "No file selected"
         else:
@@ -122,42 +132,48 @@ class Frontend:
         file_label = tk.Label(sidebar_frame, text=title, fg="white", font="Helvetica 12 bold", bg=self.sidebar_color)
         file_label.pack(anchor="n")
 
-        file_icon = tk.Label(sidebar_frame, text=chr(0x1F4C4), font = "Helvetica 120", bg=self.sidebar_color)
+        file_icon = tk.Label(sidebar_frame, text=chr(0x1F4C4), font="Helvetica 120", bg=self.sidebar_color)
         file_icon.pack(pady=10)
 
         file_description = tk.Label(sidebar_frame, text=descryption, font="Helvetica 12 bold", bg=self.sidebar_color)
         file_description.pack(pady=5)
-        
-        file_button_frame = tk.Frame(sidebar_frame, width=10, height= 30)
+
+        file_button_frame = tk.Frame(sidebar_frame, width=10, height=30)
         file_button_frame.pack(pady=5)
 
-        choose_file_button = tk.Button(file_button_frame, text="CHOOSE", command=choose_function, font="Helvetica 12 bold", bg=self.sidebar_color, bd=0, highlightthickness=0, relief='flat')
+        choose_file_button = tk.Button(file_button_frame, text="CHOOSE", command=choose_function,
+                                       font="Helvetica 12 bold", bg=self.sidebar_color, bd=0, highlightthickness=0,
+                                       relief='flat')
         choose_file_button.pack(fill="both", expand=True)
 
         return sidebar_frame
-    
+
     def draw_center_frame(self):
         if self.mode == "encrypt":
             def function():
-                hash, asymmetric_key, symmetric_key = self.encrypt(self.input_file, self.output_file, self.password.get())
-                self.hash.set(hash)
-                self.asymmetric_key.set(asymmetric_key)
-                self.symmetric_key.set(symmetric_key)
-                self.update_center_frame()
+                password = self.password.get()
+                input_file = self.input_file
+                output_file = self.output_file
+                encrypt_file(password, input_file, output_file)
+                input_file.close()
+                output_file.close()
+
             asymmetric_key = "PUBLIC KEY FOR SYMETRIC KEY ENCRYPTION"
             title = "ENCRYPT"
         elif self.mode == "decrypt":
             def function():
-                hash, asymmetric_key, symmetric_key = self.decrypt(self.input_file, self.output_file, self.password.get())
-                self.hash.set(hash)
-                self.asymmetric_key.set(asymmetric_key)
-                self.symmetric_key.set(symmetric_key)
-                self.update_center_frame()
+                password = self.password.get()
+                input_file = self.input_file
+                output_file = self.output_file
+                decrypt_file(password, input_file, output_file)
+                input_file.close()
+                output_file.close()
+
             asymmetric_key = "PRIVATE KEY FOR SYMETRIC KEY DECRYPTION"
             title = "DECRYPT"
         else:
             return
-        
+
         self.frame_center = tk.Frame(self.root, padx=10, pady=10, bg=self.center_color)
         self.frame_center.grid(row=0, column=2, sticky="nsew")
 
@@ -179,13 +195,15 @@ class Frontend:
         public_key_entry = tk.Entry(self.frame_center, textvariable=self.asymmetric_key, state="disabled")
         public_key_entry.pack(pady=5)
 
-        symmetric_key_label = tk.Label(self.frame_center, text="SYMMETRIC FILE ENCYPTION KEY", fg="white", font="Helvetica 12 bold")
+        symmetric_key_label = tk.Label(self.frame_center, text="SYMMETRIC FILE ENCYPTION KEY", fg="white",
+                                       font="Helvetica 12 bold")
         symmetric_key_label.pack()
 
         symmetric_key_entry = tk.Entry(self.frame_center, textvariable=self.symmetric_key, state="disabled")
         symmetric_key_entry.pack(pady=5)
 
-        encrypt_button = tk.Button(self.frame_center, text=title, command=function, relief="flat", font="Helvetica 12 bold", bg=self.center_color)
+        encrypt_button = tk.Button(self.frame_center, text=title, command=function, relief="flat",
+                                   font="Helvetica 12 bold", bg=self.center_color)
         encrypt_button.pack(pady=10)
 
     def draw_window_body(self):
