@@ -38,20 +38,19 @@ class Frontend:
 
     def choose_input_file(self):
         if self.mode == "decrypt":
-            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")])
+            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")], initialdir="~/Desktop")
         else:
-            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb")
+            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb", initialdir="~/Desktop")
         
-
         for widget in self.left_sidebar.winfo_children():
             widget.destroy()
         self.left_sideba = self.draw_sidebar(side="left")
 
     def choose_output_file(self):
         if self.mode == "encrypt":
-            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")])
+            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")], initialdir="~/Desktop")
         else:
-            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb")
+            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb", initialdir="~/Desktop")
         
         for widget in self.right_sidebar.winfo_children():
             widget.destroy()
