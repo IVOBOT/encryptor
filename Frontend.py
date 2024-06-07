@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
-# from key_generator import *
-
 
 def function(input_file, output_file, password):
     hash = ""
@@ -182,7 +180,6 @@ class Frontend:
                 input_file = self.input_file
                 output_file = self.output_file
                 self.encrypt(password, input_file, output_file)
-                # encrypt_file(password, input_file, output_file)
                 input_file.close()
                 output_file.close()
                 tk.messagebox.showinfo("Encryption", "Encryption completed successfully")
@@ -198,7 +195,6 @@ class Frontend:
                 input_file = self.input_file
                 output_file = self.output_file
                 self.decrypt(password, input_file, output_file)
-                # decrypt_file(password, input_file, output_file)
                 input_file.close()
                 output_file.close()
                 tk.messagebox.showinfo("Decryption", "Decryption completed successfully")

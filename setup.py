@@ -3,7 +3,7 @@ from setuptools import setup
 APP = ['main.py']
 OPTIONS = {
     'argv_emulation': False,
-    'packages': ['Frontend', 'cryptography', 'cffi'],
+    'packages': ['Frontend', 'cryptography', 'cffi', 'key_generator'],
 }
 
 setup(
