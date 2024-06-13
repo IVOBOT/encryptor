@@ -12,6 +12,8 @@ def function(input_file, output_file, password):
 class Frontend:
     input_file = None
     output_file = None
+    output_filename = None
+    input_filename = None
     password = None
     hash = None
     asymmetric_key = None
@@ -38,20 +40,34 @@ class Frontend:
 
     def choose_input_file(self):
         if self.mode == "decrypt":
-            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")], initialdir="~/Desktop")
+            self.input_filename = filedialog.askopenfilename(
+                title="Choose input file",
+                defaultextension=".enc",
+                filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")],
+                initialdir="~/Desktop"
+            )
         else:
-            self.input_file = filedialog.askopenfile(title="Choose input file", mode="rb", initialdir="~/Desktop")
-        
+            self.input_filename = filedialog.askopenfilename(
+                title="Choose input file",
+                initialdir="~/Desktop"
+            )
         for widget in self.left_sidebar.winfo_children():
             widget.destroy()
         self.left_sideba = self.draw_sidebar(side="left")
 
     def choose_output_file(self):
         if self.mode == "encrypt":
-            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb", defaultextension=".enc", filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")], initialdir="~/Desktop")
+            self.output_filename = filedialog.asksaveasfilename(
+                title="Choose output file",
+                defaultextension=".enc",
+                filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")],
+                initialdir="~/Desktop"
+            )
         else:
-            self.output_file = filedialog.asksaveasfile(title="Choose output file", mode="wb", initialdir="~/Desktop")
-        
+            self.output_filename = filedialog.asksaveasfilename(
+                title="Choose output file",
+                initialdir="~/Desktop"
+            )
         for widget in self.right_sidebar.winfo_children():
             widget.destroy()
         self.right_sidebar = self.draw_sidebar(side="right")
@@ -172,30 +188,26 @@ class Frontend:
     def draw_center_frame(self):
         if self.mode == "encrypt":
             def function():
-                if not self.password.get() or not self.input_file or not self.output_file:
+                if not self.password.get() or not self.input_filename:
                     tk.messagebox.showerror("Error", "Please fill all required fields")
                     return
                 password = self.password.get()
-                input_file = self.input_file
-                output_file = self.output_file
+                input_file = self.input_filename
+                output_file = self.output_filename
                 self.encrypt(password, input_file, output_file)
-                input_file.close()
-                output_file.close()
                 tk.messagebox.showinfo("Encryption", "Encryption completed successfully")
 
             asymmetric_key = "PUBLIC KEY FOR SYMETRIC KEY ENCRYPTION"
             title = "ENCRYPT"
         elif self.mode == "decrypt":
             def function():
-                if not self.password.get() or not self.input_file or not self.output_file:
+                if not self.password.get() or not self.input_filename:
                     tk.messagebox.showerror("Error", "Please fill all required fields")
                     return
                 password = self.password.get()
-                input_file = self.input_file
-                output_file = self.output_file
+                input_file = self.input_filename
+                output_file = self.output_filename
                 self.decrypt(password, input_file, output_file)
-                input_file.close()
-                output_file.close()
                 tk.messagebox.showinfo("Decryption", "Decryption completed successfully")
 
 
