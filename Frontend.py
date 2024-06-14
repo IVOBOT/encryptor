@@ -10,8 +10,6 @@ def function(input_file, output_file, password):
 
 
 class Frontend:
-    input_file = None
-    output_file = None
     output_filename = None
     input_filename = None
     password = None
@@ -33,12 +31,22 @@ class Frontend:
     def __init__(self, encryption_function, decryption_function):
         self.encrypt = encryption_function
         self.decrypt = decryption_function
-        # self.input_file = self.choose_input_file()
+        self.choose_input_filename()
         self.init_window()
         self.draw_window_body()
         self.root.mainloop()
 
-    def choose_input_file(self):
+    def reset_sidebars(self):
+        if (self.left_sidebar is not None):
+            for widget in self.left_sidebar.winfo_children():
+                widget.destroy()
+            self.left_sidebar = self.draw_sidebar(side="left")
+        if (self.right_sidebar is not None):
+            for widget in self.right_sidebar.winfo_children():
+                widget.destroy()
+            self.right_sidebar = self.draw_sidebar(side="right")
+
+    def choose_input_filename(self):
         if self.mode == "decrypt":
             self.input_filename = filedialog.askopenfilename(
                 title="Choose input file",
@@ -46,16 +54,28 @@ class Frontend:
                 filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")],
                 initialdir="~/Desktop"
             )
-        else:
+            if self.input_filename == "":
+                self.input_filename = None
+                self.output_filename = None
+                self.reset_sidebars()
+                return
+            self.output_filename = self.input_filename.split(".")[0]
+        elif self.mode == "encrypt":
             self.input_filename = filedialog.askopenfilename(
                 title="Choose input file",
                 initialdir="~/Desktop"
             )
-        for widget in self.left_sidebar.winfo_children():
-            widget.destroy()
-        self.left_sideba = self.draw_sidebar(side="left")
+            if self.input_filename == "":
+                self.input_filename = None
+                self.output_filename = None
+                self.reset_sidebars()
+                return
+            self.output_filename = self.input_filename.split(".")[0] + ".enc"
+        else:
+            raise ValueError("Invalid mode")
+        self.reset_sidebars()
 
-    def choose_output_file(self):
+    def choose_output_filename(self):
         if self.mode == "encrypt":
             self.output_filename = filedialog.asksaveasfilename(
                 title="Choose output file",
@@ -63,27 +83,23 @@ class Frontend:
                 filetypes=[("Encrypted files", "*.enc"), ("All files", "*.*")],
                 initialdir="~/Desktop"
             )
+        if self.output_filename == "":
+            self.output_filename = None
+            return
         else:
             self.output_filename = filedialog.asksaveasfilename(
                 title="Choose output file",
                 initialdir="~/Desktop"
             )
-        for widget in self.right_sidebar.winfo_children():
-            widget.destroy()
-        self.right_sidebar = self.draw_sidebar(side="right")
+        self.reset_sidebars()
 
     def update_view(self):
-        self.output_file = None
-        self.input_file = None
+        self.output_filename = None
+        self.input_filename = None
         for widget in self.frame_center.winfo_children():
             widget.destroy()
         self.draw_center_frame()
-        for widget in self.left_sidebar.winfo_children():
-            widget.destroy()
-        self.left_sidebar = self.draw_sidebar(side="left")
-        for widget in self.right_sidebar.winfo_children():
-            widget.destroy()
-        self.right_sidebar = self.draw_sidebar(side="right")
+        self.reset_sidebars()
         self.root.update_idletasks()
 
     def set_mode_encrypt(self):
@@ -110,7 +126,7 @@ class Frontend:
 
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Choose input file", command=self.choose_input_file)
+        file_menu.add_command(label="Choose input file", command=self.choose_input_filename)
         file_menu.add_separator()
         file_menu.add_command(label="Close app", command=self.root.quit)
 
@@ -120,42 +136,44 @@ class Frontend:
         edit_menu.add_command(label="Decrypt", command=self.set_mode_decrypt)
 
     def draw_sidebar(self, side):
-
         if side == "left":
             border_sticky = "nsew"
             sticky = "ns"
             column = 0
             grid_column = 1
             title = "INPUT FILE"
-            choose_function = self.choose_input_file
-            loaded_file = self.input_file
+            choose_function = self.choose_input_filename
+            loaded_filename = self.input_filename
         elif side == "right":
             border_sticky = "ns"
             sticky = "nsew"
             column = 4
             grid_column = 3
             title = "OUTPUT FILE"
-            choose_function = self.choose_output_file
-            loaded_file = self.output_file
+            choose_function = self.choose_output_filename
+            loaded_filename = self.output_filename
         else:
-            return
-
-        if loaded_file == None:
+            raise ValueError("Invalid side")
+        if loaded_filename == None or loaded_filename == "":
             descryption = "No file selected"
             file_icon_text = chr(0x1F5AE)  # question mark
         else:
-            descryption = os.path.basename(loaded_file.name)
-            extension = os.path.splitext(loaded_file.name)[1]
-            if extension == '.enc':
+            descryption = loaded_filename.split("/")[-1]
+            extension = loaded_filename.split(".")[-1]
+            if extension == 'enc':
                 file_icon_text = chr(0x1F512)  # floppy disk
-            elif extension in ['.txt', '.doc', '.docx', '.pdf']:
+            elif extension in ['txt', 'doc', 'docx', 'pdf']:
                 file_icon_text = chr(0x1F4C4)  # file icon
-            elif extension in ['.jpg', '.png', '.gif']:
+            elif extension in ['jpg', 'png', 'gif']:
                 file_icon_text = chr(0x1F5BC)  # frame with picture
-            elif extension in ['.mp3', '.wav']:
+            elif extension in ['mp3', 'wav']:
                 file_icon_text = chr(0x1F3B6)  # musical notes
-            elif extension in ['.mp4', '.avi']:
+            elif extension in ['mp4', 'avi']:
                 file_icon_text = chr(0x1F39E)  # film frames
+            elif extension in ['zip', 'rar', '7z']:
+                file_icon_text = chr(0x1F4E6)
+            elif extension in ['<?>']:
+                file_icon_text = chr(0x1F5C2)
             else:
                 file_icon_text = chr(0x1F5C2)  # file folder
 
@@ -192,9 +210,7 @@ class Frontend:
                     tk.messagebox.showerror("Error", "Please fill all required fields")
                     return
                 password = self.password.get()
-                input_file = self.input_filename
-                output_file = self.output_filename
-                self.encrypt(password, input_file, output_file)
+                self.encrypt(password, self.input_filename, self.output_filename)
                 tk.messagebox.showinfo("Encryption", "Encryption completed successfully")
 
             asymmetric_key = "PUBLIC KEY FOR SYMETRIC KEY ENCRYPTION"
@@ -205,11 +221,8 @@ class Frontend:
                     tk.messagebox.showerror("Error", "Please fill all required fields")
                     return
                 password = self.password.get()
-                input_file = self.input_filename
-                output_file = self.output_filename
-                self.decrypt(password, input_file, output_file)
+                self.decrypt(password, self.input_filename, self.output_filename)
                 tk.messagebox.showinfo("Decryption", "Decryption completed successfully")
-
 
             asymmetric_key = "PRIVATE KEY FOR SYMETRIC KEY DECRYPTION"
             title = "DECRYPT"
@@ -219,32 +232,18 @@ class Frontend:
         self.frame_center = tk.Frame(self.root, padx=10, pady=10, bg=self.center_color)
         self.frame_center.grid(row=0, column=2, sticky="nsew")
 
+        # Dodanie niewidzialnego Frame na górze dla centrowania
+        tk.Frame(self.frame_center, height=1, bg=self.center_color).pack(side="top", expand=True)
+
         password_entry = tk.Entry(self.frame_center, show="*", font="Helvetica 12 bold", textvariable=self.password)
         password_entry.pack(pady=5)
 
-        '''hash_label = tk.Label(self.frame_center, text="HASH", fg="white", font="Helvetica 12 bold")
-        hash_label.pack()
-
-        hash_entry = tk.Entry(self.frame_center, textvariable=self.hash, state="disabled")
-        hash_entry.pack(pady=5)
-
-        public_key_label = tk.Label(self.frame_center, text=asymmetric_key, fg="white", font="Helvetica 12 bold")
-        public_key_label.pack()
-
-        public_key_entry = tk.Entry(self.frame_center, textvariable=self.asymmetric_key, state="disabled")
-        public_key_entry.pack(pady=5)
-
-        symmetric_key_label = tk.Label(self.frame_center, text="SYMMETRIC FILE ENCYPTION KEY", fg="white",
-                                       font="Helvetica 12 bold")
-        symmetric_key_label.pack()
-
-        symmetric_key_entry = tk.Entry(self.frame_center, textvariable=self.symmetric_key, state="disabled")
-        symmetric_key_entry.pack(pady=5)
-        '''
-
         encrypt_button = tk.Button(self.frame_center, text=title, command=function, relief="flat",
-                                   font="Helvetica 12 bold", bg=self.center_color)
+                                font="Helvetica 12 bold", bg=self.center_color)
         encrypt_button.pack(pady=10)
+
+        # Dodanie niewidzialnego Frame na dole dla centrowania
+        tk.Frame(self.frame_center, height=1, bg=self.center_color).pack(side="bottom", expand=True)
 
     def draw_window_body(self):
         self.left_sidebar = self.draw_sidebar(side="left")
