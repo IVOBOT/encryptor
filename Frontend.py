@@ -232,7 +232,6 @@ class Frontend:
         self.frame_center = tk.Frame(self.root, padx=10, pady=10, bg=self.center_color)
         self.frame_center.grid(row=0, column=2, sticky="nsew")
 
-        # Dodanie niewidzialnego Frame na górze dla centrowania
         tk.Frame(self.frame_center, height=1, bg=self.center_color).pack(side="top", expand=True)
 
         password_entry = tk.Entry(self.frame_center, show="*", font="Helvetica 12 bold", textvariable=self.password)
@@ -242,7 +241,6 @@ class Frontend:
                                 font="Helvetica 12 bold", bg=self.center_color)
         encrypt_button.pack(pady=10)
 
-        # Dodanie niewidzialnego Frame na dole dla centrowania
         tk.Frame(self.frame_center, height=1, bg=self.center_color).pack(side="bottom", expand=True)
 
     def draw_window_body(self):
